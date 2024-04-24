@@ -1,7 +1,7 @@
 from fastapi import HTTPException
-from repositories.sessions_frontend_repo import SessionFrontendRepo
-from repositories.sessions_backend_repo import SessionBackendRepo
-from repositories.session_verifier_repo import SessionVerifierRepo
+from repositories.session.sessions_frontend_repo import SessionFrontendRepo
+from repositories.session.sessions_backend_repo import SessionBackendRepo
+from repositories.session.session_verifier_repo import SessionVerifierRepo
 
 
 class SessionsService:
