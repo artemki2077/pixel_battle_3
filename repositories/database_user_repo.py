@@ -4,8 +4,8 @@ from schemas.user import User
 import hashlib
 
 
-class DataBaseRepo:
-    def __init__(self, name: str = "test_name", redis_config: Optional[RedisConfig] = None):
+class DataBaseUserRepo:
+    def __init__(self, name: str = "user_store", redis_config: Optional[RedisConfig] = None):
         self.store = Store(
             name=name,
             redis_config=redis_config if redis_config is not None else RedisConfig()

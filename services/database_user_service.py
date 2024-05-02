@@ -1,9 +1,9 @@
-from repositories.database_repo import DataBaseRepo
+from repositories.database_user_repo import DataBaseUserRepo
 from schemas.user import User
 
 
-class DataBaseService:
-    def __init__(self, repo: DataBaseRepo):
+class DataBaseUserService:
+    def __init__(self, repo: DataBaseUserRepo):
         self.repo = repo
 
     async def get_user_by_username(self, username: str):

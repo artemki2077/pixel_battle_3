@@ -1,3 +1,3 @@
 import datetime as dt
 
-TIME_WAIT = dt.timedelta(minutes=5)
+TIME_WAIT = dt.timedelta(minutes=1)
