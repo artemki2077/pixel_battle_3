@@ -6,7 +6,7 @@ class DataBaseUserService:
     def __init__(self, repo: DataBaseUserRepo):
         self.repo = repo
 
-    async def get_user_by_username(self, username: str):
+    async def get_user_by_username(self, username: str) -> list[User] | None:
         return await self.repo.get_user_by_username(username)
 
     async def add_user(self, user: User):

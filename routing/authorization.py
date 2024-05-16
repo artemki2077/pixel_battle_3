@@ -9,17 +9,37 @@ from fastapi.staticfiles import StaticFiles
 from services.database_user_service import DataBaseUserService
 from services.sessions_service import SessionsService
 from depends import get_sessions_service, get_database_user_service
-# from depends import sessions_service
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 import datetime as dt
 
 router = APIRouter(prefix="/auth", tags=["authorization"])
+
+templates_login = Jinja2Templates(directory="frontend/login/templates")
+router.mount("/auth/static", StaticFiles(directory="frontend/login/static"), name="static_login")
 
 
 @router.get("/", dependencies=[Depends(sessions_service.cookie)])
 async def index_authorization(session_data: SessionData = Depends(sessions_service.verifier)):
     if session_data is None:
-        return RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
+        return RedirectResponse("/auth/login", status_code=status.HTTP_302_FOUND)
     return RedirectResponse("/map", status_code=status.HTTP_302_FOUND)
+
+
+@router.get("/login", dependencies=[Depends(sessions_service.cookie)], response_class=HTMLResponse)
+async def get_login_authorization(
+    request: Request,
+    dataBaseUserService: DataBaseUserService = Depends(get_database_user_service),
+    sessionsService: SessionsService = Depends(get_sessions_service),
+    session_data: SessionData = Depends(sessions_service.verifier)
+):
+    if session_data is not None:
+        return RedirectResponse("/map", status_code=status.HTTP_302_FOUND)
+    return templates_login.TemplateResponse(
+        request=request, name="index.html", context={
+            "result": ""
+        }
+    )
 
 
 @router.post("/login", dependencies=[Depends(sessions_service.cookie)])
@@ -28,12 +48,15 @@ async def post_login_authorization(
     dataBaseUserService: DataBaseUserService = Depends(get_database_user_service),
     sessionsService: SessionsService = Depends(get_sessions_service)
 ):
-    # user_data = await request.form()
-
-    user_data = await request.json()
+    user_data = await request.form()
+    # user_data = await request.json()
 
     if not user_data.get("username") or not user_data.get("password"):
-        raise HTTPException(status_code=401, detail="the username or password parameter is missing in the request")
+        return templates_login.TemplateResponse(
+            request=request, name="index.html", context={
+                "result": "в запросе на авторизацию не хватает данных"
+            }
+        )
 
     username: str = user_data.get("username")
     password: str = user_data.get("password")
@@ -45,12 +68,20 @@ async def post_login_authorization(
     database_response = await dataBaseUserService.get_user_by_username(username)
 
     if database_response is None:
-        raise HTTPException(status_code=401, detail="not such username")
+        return templates_login.TemplateResponse(
+            request=request, name="index.html", context={
+                "result": "Данного пользователя не существует"
+            }
+        )
 
     user = database_response[0]
     hashed_getter_pass = dataBaseUserService.hash_pass(password, user.password_salt)
     if hashed_getter_pass != user.password_hash:
-        raise HTTPException(status_code=401, detail="wrong password")
+        return templates_login.TemplateResponse(
+            request=request, name="index.html", context={
+                "result": "Не правильный пароль или логин"
+            }
+        )
 
     session = uuid4()
     data = SessionData(
@@ -58,7 +89,7 @@ async def post_login_authorization(
         last_click=user.last_click.isoformat()
     )
     await sessionsService.backend.create(session, data)
-    response = RedirectResponse("/map/", status_code=status.HTTP_302_FOUND)
+    response = RedirectResponse("/map", status_code=status.HTTP_302_FOUND)
     sessionsService.cookie.attach_to_response(response, session)
 
     return response
