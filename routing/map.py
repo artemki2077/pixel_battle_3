@@ -74,7 +74,6 @@ async def click(
         return RedirectResponse("/auth/logout", status_code=status.HTTP_302_FOUND)
 
     user = users[0]
-    print(dt.datetime.now() - user.last_click)
     if dt.datetime.now() - user.last_click < TIME_WAIT:
         return {
             "ok"            : False,

@@ -1,11 +1,14 @@
 from fastapi.responses import RedirectResponse
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from starlette.staticfiles import StaticFiles
+
+from depends import sessions_service
 from routing.authorization import router as router_authorization
 from routing.map import router as router_map
 from fastapi.middleware.cors import CORSMiddleware
 import starlette.status as status
 import uvicorn
+from schemas.sessions_data import SessionData
 
 app = FastAPI(title="pixel battle 3", description=
     """
@@ -30,9 +33,13 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def index():
-    return RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
+@app.get("/", dependencies=[Depends(sessions_service.cookie)])
+async def index(
+    session_data: SessionData = Depends(sessions_service.verifier),
+):
+    if session_data is None:
+        return RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
+    return RedirectResponse("/map", status_code=status.HTTP_302_FOUND)
 
 
 if __name__ == '__main__':
