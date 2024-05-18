@@ -11,8 +11,8 @@ load_dotenv()
 
 sessions_service = SessionsService(os.getenv("SECRET_KEY"))
 
-# database_user_repo = DataBaseUserRepo(redis_config=RedisConfig(host="localhost",port=6379,password=os.getenv("DB_PASSWORD")))
-database_user_repo = DataBaseUserRepo(redis_config=RedisConfig(host="artemki77.ru",port=6379,password=os.getenv("DB_PASSWORD")))
+database_user_repo = DataBaseUserRepo(redis_config=RedisConfig(host="localhost",port=6379,password=os.getenv("DB_PASSWORD")))
+# database_user_repo = DataBaseUserRepo(redis_config=RedisConfig(host="artemki77.ru",port=6379,password=os.getenv("DB_PASSWORD")))
 
 database_user_service = DataBaseUserService(database_user_repo)
 database_map_repo = DataBaseMapRepo(password=os.getenv("DB_PASSWORD"))
