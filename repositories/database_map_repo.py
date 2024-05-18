@@ -44,6 +44,12 @@ class DataBaseMapRepo:
     async def update_cell(self, cell: Cell):
         await self.Cell.insert(cell)
 
+    async def count_clicks(self):
+        return await self.redis.xlen(self.stream_click_name)
+
+    async def get_by_key(self, key: str):
+        return await self.redis.get(key)
+
     async def get_new_click(self) -> list[Click] | None:
         try:
             res = await self.redis.xread({self.stream_click_name: "$"}, block=0)

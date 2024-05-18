@@ -99,12 +99,14 @@ async def click(
         color=data.get("color")
     )
     click = Click(
+        username=session_data.username,
         x=data.get('x'),
         y=data.get('y'),
         color=data.get("color"),
         time=dt.datetime.now()
     )
     user.last_click = dt.datetime.now()
+    user.count_click = user.count_click + 1
 
     await db_users.add_user(user)
     await db_map.update_cell(cell)

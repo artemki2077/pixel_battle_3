@@ -5,8 +5,8 @@ from enum import Enum
 
 
 class UserRole(Enum):
-    user = "user"
-    admin = "admin"
+    user = "User"
+    admin = "Admin"
 
 
 class UserStatus(Enum):
@@ -22,3 +22,4 @@ class User(Model):
     role: UserRole = UserRole.user
     status: UserStatus = UserStatus.at_registration
     last_click: dt.datetime
+    count_click: int = 0

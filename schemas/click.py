@@ -4,7 +4,9 @@ import datetime as dt
 
 
 class Click(BaseModel):
+    username: str
     x: int
     y: int
     color: str
     time: dt.datetime
+

@@ -12,13 +12,11 @@ from depends import get_database_user_service
 from aiogram.types import Message
 from dotenv import load_dotenv
 import random
-from aiogram.utils import markdown
 import datetime as dt
 from aiogram.utils.formatting import (
-    Bold, as_list, as_marked_section, as_key_value, HashTag, TextLink
+    Bold, as_list, as_marked_section, as_key_value, HashTag, TextLink, html_decoration
 )
 import string
-
 load_dotenv()
 
 TOKEN = getenv("BOT_TOKEN")
@@ -28,22 +26,22 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
-    text = f"""*Привет 👋)*
+    text = f"""<b>Привет 👋)</b>
     
-это бот для регистрации и привязке аккаунта на сайте [artemki77.ru](https://artemki77.ru)
+это бот для регистрации и привязке аккаунта на сайте <a href='https://artemki77.ru'>artemki77.ru</a>
 
 для регистрации вы можете воспользоваться командой /setpass, инструкция ниже
 
-*доступные команды:*
+<b>доступные команды:</b>
 
 1. /setpass
-{markdown.pre('Команда для того чтобы задать или сменить пароль, формат: /setpass "ваш пароль"')}
+{html_decoration.pre('Команда для того чтобы задать или сменить пароль, формат: /setpass "ваш пароль"')}
 
 2. /info
-{markdown.pre('Сосояние сервера, а так же выводит карту')}
+{html_decoration.pre('Сосояние сервера, а так же выводит карту')}
 
 3. /me, /stats
-{markdown.pre('выводит ваш статус, а так же важу статистику')}
+{html_decoration.pre('выводит ваш статус, а так же важу статистику')}
 """
     username = message.from_user.username.lower()
     db_users = get_database_user_service()
@@ -67,8 +65,8 @@ async def test(message: Message) -> None:
 async def command_setpass_handler(message: Message, command: CommandObject) -> None:
     if command.args is None:
         text = f"""
-        *❗️Вы не ввели пароль:*
-        {markdown.pre('/setpass <ваш пароль>')}
+        {html_decoration.bold('❗️Вы не ввели пароль:')}
+        {html_decoration.pre('/setpass "ваш пароль"')}
         """
         await message.answer(text)
         return
@@ -98,30 +96,57 @@ async def command_setpass_handler(message: Message, command: CommandObject) -> N
 
     if old_status == UserStatus.at_registration:
         text = f"""
-            ✅Вы зарегистрировались
-            теперь вы можете войти на сайте {markdown.link('artemki77.ru', "https://artemki77.ru")}
-            
-            логин: {username},
-            пароль:  {new_password},
-            
-            *сайт и бот сохраняет только хэши паролей, поэтому на счёт безопасности можете не беспокоиться
+            {html_decoration.bold('✅Вы зарегистрировались')}
+теперь вы можете войти на сайте <a href='https://artemki77.ru'>artemki77.ru</a>
+
+логин: {username}
+пароль:  {new_password}
+
+
+{html_decoration.italic('сайт и бот сохраняют только хэши паролей')}
         """
         await message.answer(text)
     else:
         text = f"""
             ✅Вы поменяли пароль
-            теперь вы можете войти на сайте {markdown.link('artemki77.ru', "https://artemki77.ru")}
-    
-            логин: {username},
-            пароль:  {new_password},
-    
-            *сайт и бот сохраняет только хэши паролей, поэтому на счёт безопасности можете не беспокоиться
+теперь вы можете войти на сайте <a href='https://artemki77.ru'>artemki77.ru</a>
+
+логин: {username}
+пароль:  {new_password}
+
+
+{html_decoration.italic('сайт и бот сохраняют только хэши паролей')}
         """
         await message.answer(text)
 
 
+@dp.message(Command("me", "stats"))
+async def test(message: Message) -> None:
+    username = message.from_user.username.lower()
+
+    db_users = get_database_user_service()
+
+    users = await db_users.get_user_by_username(username)
+    if not users:
+        text = html_decoration.bold("❗Вас нету в базе данных или вы заблокированны:")
+        await message.answer(text)
+        return
+
+    user = users[0]
+
+    text = f"""
+    👤{user.username}
+{html_decoration.bold('роль:')}  {user.role.value}
+{html_decoration.bold('статус:')} {user.status.value}
+{html_decoration.bold('последний клик:')} {user.last_click.isoformat()}
+{html_decoration.bold('количество кликов:')} {user.count_click}
+    """
+
+    await message.answer(text)
+
+
 async def main() -> None:
-    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN))
+    bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     await dp.start_polling(bot)
 
 
