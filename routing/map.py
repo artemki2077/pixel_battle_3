@@ -6,6 +6,8 @@ from config import TIME_WAIT
 from schemas.cell import Cell
 from schemas.click import Click
 import datetime as dt
+
+from schemas.user import UserRole
 from services.database_map_service import DataBaseMapService
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -74,7 +76,7 @@ async def click(
         return RedirectResponse("/auth/logout", status_code=status.HTTP_302_FOUND)
 
     user = users[0]
-    if dt.datetime.now() - user.last_click < TIME_WAIT:
+    if dt.datetime.now() - user.last_click < TIME_WAIT and user.role == UserRole.user:
         return {
             "ok"            : False,
             "result"        : "wait",

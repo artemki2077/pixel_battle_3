@@ -6,6 +6,8 @@ from starlette import status
 from depends import sessions_service
 from schemas.sessions_data import SessionData
 from fastapi.staticfiles import StaticFiles
+
+from schemas.user import UserStatus
 from services.database_user_service import DataBaseUserService
 from services.sessions_service import SessionsService
 from depends import get_sessions_service, get_database_user_service
@@ -75,11 +77,17 @@ async def post_login_authorization(
         )
 
     user = database_response[0]
+    if user.status == UserStatus.at_registration:
+        return templates_login.TemplateResponse(
+            request=request, name="index.html", context={
+                "result": "Вы ещё не до регистрировались"
+            }
+        )
     hashed_getter_pass = dataBaseUserService.hash_pass(password, user.password_salt)
     if hashed_getter_pass != user.password_hash:
         return templates_login.TemplateResponse(
             request=request, name="index.html", context={
-                "result": "Не правильный пароль или логин"
+                "result": "Не правильный пароль"
             }
         )
 

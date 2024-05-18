@@ -14,10 +14,10 @@ class DataBaseUserRepo:
         self.User_model = User
 
     @staticmethod
-    def sha256(value: str):
+    def sha256(value: str) -> str:
         return hashlib.sha256(value.encode()).hexdigest()
 
-    def hash_pass(self, value: str, salt: str):
+    def hash_pass(self, value: str, salt: str) -> str:
         return self.sha256(f'{value}:{salt}')
 
     async def get_user_by_username(self, username: str) -> User | dict[str, Any] | None:
