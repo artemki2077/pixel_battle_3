@@ -81,10 +81,15 @@ async def command_info_handler(message: Message) -> None:
     count_click = str(await db_map.get_count_clicks())
 
     if result != count_click:
+        all_map: list[Cell] = await db_map.get_all_map()
+        if not all_map:
+            await message.answer("карта пока пуста(")
+            return
+
         img = Image.new('RGBA', (500, 500), 'white')
         buffer = BytesIO()
         idraw = ImageDraw.Draw(img)
-        all_map: list[Cell] = await db_map.get_all_map()
+
         for cell in all_map:
             size_cell = 10  # px
             cell_cords = list(map(int, cell.cords.split()))

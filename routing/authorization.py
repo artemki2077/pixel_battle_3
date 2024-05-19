@@ -109,6 +109,6 @@ async def post_logout_authorization(
     sessionsService: SessionsService = Depends(get_sessions_service)
 ):
     await sessionsService.backend.delete(session_id)
-    response = RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
+    response = RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
     sessionsService.cookie.delete_from_response(response)
     return response
