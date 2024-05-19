@@ -122,9 +122,12 @@ async def ws_map(
     websocket: WebSocket,
     db_map: DataBaseMapService = Depends(get_database_map_service)
 ):
-    await websocket.accept()
-    while True:
-        clicks = await db_map.get_new_click()
-        if clicks is not None:
-            for e_click in clicks:
-                await websocket.send_json(e_click.model_dump(mode="json"))
+    try:
+        await websocket.accept()
+        while True:
+            clicks = await db_map.get_new_click()
+            if clicks is not None:
+                for e_click in clicks:
+                    await websocket.send_json(e_click.model_dump(mode="json"))
+    except Exception as e:
+        print(e)
