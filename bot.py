@@ -1,14 +1,19 @@
 import asyncio
 import logging
 import sys
+from io import BytesIO
 from os import getenv
 
+import aiofiles
 from aiogram import Bot, Dispatcher, html
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.types import FSInputFile
+
+from schemas.cell import Cell
 from schemas.user import User, UserStatus
 from aiogram.filters import CommandStart, Command, CommandObject
-from depends import get_database_user_service
+from depends import get_database_user_service, get_database_map_service
 from aiogram.types import Message
 from dotenv import load_dotenv
 import random
@@ -17,11 +22,18 @@ from aiogram.utils.formatting import (
     Bold, as_list, as_marked_section, as_key_value, HashTag, TextLink, html_decoration
 )
 import string
+from PIL import Image, ImageDraw
+
 load_dotenv()
 
 TOKEN = getenv("BOT_TOKEN")
 SYMBOLS_FOR_SALT = "ABC"
 dp = Dispatcher()
+
+
+async def save_image(path: str, image: memoryview) -> None:
+    async with aiofiles.open(path, "wb") as file:
+        await file.write(image)
 
 
 @dp.message(CommandStart())
@@ -59,6 +71,33 @@ async def command_start_handler(message: Message) -> None:
 @dp.message(Command("test", "admin"))
 async def test(message: Message) -> None:
     await message.answer("и чё?")
+
+
+@dp.message(Command("info"))
+async def command_info_handler(message: Message) -> None:
+    KEY_INFO_DB = "INFO_IMG"
+    db_map = get_database_map_service()
+    result = await db_map.get_by_key(KEY_INFO_DB)
+    count_click = str(await db_map.get_count_clicks())
+
+    if result != count_click:
+        img = Image.new('RGBA', (500, 500), 'white')
+        buffer = BytesIO()
+        idraw = ImageDraw.Draw(img)
+        all_map: list[Cell] = await db_map.get_all_map()
+        for cell in all_map:
+            size_cell = 10  # px
+            cell_cords = list(map(int, cell.cords.split()))
+            cell_cords = list(map(lambda x: x * 10, cell_cords))
+            cell_cords += list(map(lambda cord: cord + size_cell, cell_cords))
+
+            idraw.rectangle(cell_cords, fill=cell.color)
+        img.save(buffer, format="PNG")
+        await save_image("info.png", buffer.getbuffer())
+        await db_map.set_by_key(KEY_INFO_DB, count_click)
+        await message.answer_photo(FSInputFile("info.png"))
+    else:
+        await message.answer_photo(FSInputFile("info.png"))
 
 
 @dp.message(Command("setpass"))
@@ -121,7 +160,7 @@ async def command_setpass_handler(message: Message, command: CommandObject) -> N
 
 
 @dp.message(Command("me", "stats"))
-async def test(message: Message) -> None:
+async def command_stats_handler(message: Message) -> None:
     username = message.from_user.username.lower()
 
     db_users = get_database_user_service()

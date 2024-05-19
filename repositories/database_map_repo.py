@@ -44,11 +44,14 @@ class DataBaseMapRepo:
     async def update_cell(self, cell: Cell):
         await self.Cell.insert(cell)
 
-    async def count_clicks(self):
+    async def get_count_clicks(self):
         return await self.redis.xlen(self.stream_click_name)
 
     async def get_by_key(self, key: str):
         return await self.redis.get(key)
+
+    async def set_by_key(self, key: str, value: str):
+        return await self.redis.set(key, value)
 
     async def get_new_click(self) -> list[Click] | None:
         try:

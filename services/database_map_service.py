@@ -19,8 +19,11 @@ class DataBaseMapService:
     async def add_new_click(self, click: Click):
         return await self.repo.add_new_click(click)
 
-    async def count_clicks(self):
-        return await self.repo.count_clicks()
+    async def get_count_clicks(self):
+        return await self.repo.get_count_clicks()
 
     async def get_by_key(self, key: str):
         return await self.repo.get_by_key(key)
+
+    async def set_by_key(self, key: str, value: str):
+        return await self.repo.set_by_key(key, value)
