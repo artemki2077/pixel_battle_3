@@ -79,6 +79,7 @@ async def command_info_handler(message: Message) -> None:
     db_map = get_database_map_service()
     result = await db_map.get_by_key(KEY_INFO_DB)
     count_click = str(await db_map.get_count_clicks())
+    count_click = 1
 
     if result != count_click:
         all_map: list[Cell] = await db_map.get_all_map()
@@ -86,14 +87,14 @@ async def command_info_handler(message: Message) -> None:
             await message.answer("карта пока пуста(")
             return
 
-        img = Image.new('RGBA', (500, 500), 'white')
+        img = Image.new('RGBA', (2000, 2000), 'white')
         buffer = BytesIO()
         idraw = ImageDraw.Draw(img)
 
         for cell in all_map:
-            size_cell = 10  # px
+            size_cell = 40  # px
             cell_cords = list(map(int, cell.cords.split()))
-            cell_cords = list(map(lambda x: x * 10, cell_cords))
+            cell_cords = list(map(lambda x: x * 40, cell_cords))
             cell_cords += list(map(lambda cord: cord + size_cell, cell_cords))
 
             idraw.rectangle(cell_cords, fill=cell.color)
