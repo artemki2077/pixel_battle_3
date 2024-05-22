@@ -87,7 +87,7 @@ async def command_info_handler(message: Message) -> None:
             await message.answer("карта пока пуста(")
             return
 
-        img = Image.new('RGBA', (20, 20), 'white')
+        img = Image.new('RGBA', (2000, 2000), 'white')
         buffer = BytesIO()
         idraw = ImageDraw.Draw(img)
 
