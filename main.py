@@ -33,12 +33,10 @@ app.add_middleware(
 )
 
 
-@app.get("/", dependencies=[Depends(sessions_service.cookie)])
-async def index(
-    session_data: SessionData = Depends(sessions_service.verifier),
-):
-    if session_data is None:
-        return RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
+@app.get("/")
+async def index():
+    # if session_data is None:
+    #     return RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
     return RedirectResponse("/map", status_code=status.HTTP_302_FOUND)
 
 

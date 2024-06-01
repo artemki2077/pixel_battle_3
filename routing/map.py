@@ -20,114 +20,118 @@ router = APIRouter(prefix="/map", tags=['map'])
 templates_map = Jinja2Templates(directory="frontend/map/templates")
 
 
-@router.get("/", dependencies=[Depends(sessions_service.cookie)])
+@router.get("/")
 async def index_map(
     request: Request,
-    session_data: SessionData = Depends(sessions_service.verifier),
+    # session_data: SessionData = Depends(sessions_service.verifier),
 ):
-    if session_data is None:
-        return RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
+    # if session_data is None:
+    #     return RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
     return templates_map.TemplateResponse(
         request=request, name="index.html", context={}
     )
 
 
-@router.get("/all_map", dependencies=[Depends(sessions_service.cookie)])
+@router.get("/all_map")
 async def get_all_map_api(
-    session_data: SessionData = Depends(sessions_service.verifier),
+    # session_data: SessionData = Depends(sessions_service.verifier),
     db_map: DataBaseMapService = Depends(get_database_map_service),
     db_users: DataBaseUserService = Depends(get_database_user_service)
 ):
-    if session_data is None:
-        return RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
+    # if session_data is None:
+    #     return RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
+    #
+    # users = await db_users.get_user_by_username(session_data.username)
 
-    users = await db_users.get_user_by_username(session_data.username)
-
-    if not users:
-        return RedirectResponse("/auth/logout", status_code=status.HTTP_302_FOUND)
-
-    user = users[0]
+    # if not users:
+    #     return RedirectResponse("/auth/logout", status_code=status.HTTP_302_FOUND)
+    #
+    # user = users[0]
     all_map = await db_map.get_all_map()
     if all_map is None:
         return {
             "ok"        : True,
             "result"    : [],
-            "last_click": user.last_click.isoformat()
+            # "last_click": user.last_click.isoformat()
         }
     return {
         "ok"        : True,
         "result"    : list(map(lambda x: x.model_dump(mode="json"), all_map)),
-        "last_click": user.last_click.isoformat()
+        # "last_click": user.last_click.isoformat()
     }
 
 
-@router.post("/click", dependencies=[Depends(sessions_service.cookie)])
+@router.post("/click")
 async def click(
     request: Request,
     session_data: SessionData = Depends(sessions_service.verifier),
     db_map: DataBaseMapService = Depends(get_database_map_service),
     db_users: DataBaseUserService = Depends(get_database_user_service)
 ):
-    if session_data is None:
-        return RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
-
-    users = await db_users.get_user_by_username(session_data.username)
-    if not users:
-        return RedirectResponse("/auth/logout", status_code=status.HTTP_302_FOUND)
-
-    user = users[0]
-    if dt.datetime.now() - user.last_click < TIME_WAIT and user.role == UserRole.user:
-        return {
-            "ok"            : False,
-            "result"        : "wait",
-            "last_click"    : user.last_click.isoformat(),
-            "TIME_WAIT"     : TIME_WAIT,
-            "time_left"     : (TIME_WAIT - (dt.datetime.now() - user.last_click)).seconds,
-            "time_left_type": "sec"
-        }
-
-    data: dict = await request.json()
-
-    if data.get("x") is None or data.get("y") is None or data.get("color") is None:
-        return {
-            "ok"    : False,
-            "result": "not x or not y or not color"
-        }
-
-    cell = Cell(
-        cords=f"{data.get('x')} {data.get('y')}",
-        color=data.get("color")
-    )
-    click = Click(
-        username=session_data.username,
-        x=data.get('x'),
-        y=data.get('y'),
-        color=data.get("color"),
-        time=dt.datetime.now()
-    )
-    user.last_click = dt.datetime.now()
-    user.count_click = user.count_click + 1
-
-    await db_users.add_user(user)
-    await db_map.update_cell(cell)
-    await db_map.add_new_click(click)
     return {
-        "ok"    : True,
-        "result": "success"
+        "ok": False,
+        "result": "pixel battle is end"
     }
+    # if session_data is None:
+    #     return RedirectResponse("/auth", status_code=status.HTTP_302_FOUND)
+    #
+    # users = await db_users.get_user_by_username(session_data.username)
+    # if not users:
+    #     return RedirectResponse("/auth/logout", status_code=status.HTTP_302_FOUND)
+    #
+    # user = users[0]
+    # if dt.datetime.now() - user.last_click < TIME_WAIT and user.role == UserRole.user:
+    #     return {
+    #         "ok"            : False,
+    #         "result"        : "wait",
+    #         "last_click"    : user.last_click.isoformat(),
+    #         "TIME_WAIT"     : TIME_WAIT,
+    #         "time_left"     : (TIME_WAIT - (dt.datetime.now() - user.last_click)).seconds,
+    #         "time_left_type": "sec"
+    #     }
+    #
+    # data: dict = await request.json()
+    #
+    # if data.get("x") is None or data.get("y") is None or data.get("color") is None:
+    #     return {
+    #         "ok"    : False,
+    #         "result": "not x or not y or not color"
+    #     }
+    #
+    # cell = Cell(
+    #     cords=f"{data.get('x')} {data.get('y')}",
+    #     color=data.get("color")
+    # )
+    # click = Click(
+    #     username=session_data.username,
+    #     x=data.get('x'),
+    #     y=data.get('y'),
+    #     color=data.get("color"),
+    #     time=dt.datetime.now()
+    # )
+    # user.last_click = dt.datetime.now()
+    # user.count_click = user.count_click + 1
+    #
+    # await db_users.add_user(user)
+    # await db_map.update_cell(cell)
+    # await db_map.add_new_click(click)
+    # return {
+    #     "ok"    : True,
+    #     "result": "success"
+    # }
 
 
-@router.websocket("/connection")
-async def ws_map(
-    websocket: WebSocket,
-    db_map: DataBaseMapService = Depends(get_database_map_service)
-):
-    try:
-        await websocket.accept()
-        while True:
-            clicks = await db_map.get_new_click()
-            if clicks is not None:
-                for e_click in clicks:
-                    await websocket.send_json(e_click.model_dump(mode="json"))
-    except Exception as e:
-        print(e)
+# @router.websocket("/connection")
+# async def ws_map(
+#     websocket: WebSocket,
+#     db_map: DataBaseMapService = Depends(get_database_map_service)
+# ):
+#     try:
+#         await websocket.accept()
+#         while True:
+#             clicks = await db_map.get_new_click()
+#             if clicks is not None:
+#                 for e_click in clicks:
+#                     await websocket.send_json(e_click.model_dump(mode="json"))
+#     except Exception as e:
+#         print(e)
